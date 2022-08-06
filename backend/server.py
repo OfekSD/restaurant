@@ -1,7 +1,7 @@
 #!/bin/python3
 from fastapi import FastAPI
 
-from routes.meals import router as mealsRouter
+from routes.food import router as mealsRouter
 
 app = FastAPI()
 

@@ -1,5 +1,4 @@
 from email import message
-import imp
 from fastapi import APIRouter, HTTPException
 from models.food import Food
 from lib.db import cur
