@@ -14,6 +14,7 @@ func Orders(router *gin.RouterGroup){
 		router.GET("/",getOrders)
 		router.POST("/",createOrder)
 		router.GET("/:id",getOrder)
+		router.PATCH("/:id",changeOrderStatus)
 		router.DELETE("/:id",deleteOrder)
 	}
 }
@@ -73,10 +74,25 @@ func getOrder(ctx *gin.Context){
 		return
 	}
 	ctx.JSON(200,order)
-	
-
 }
 
+func changeOrderStatus(ctx *gin.Context){
+	id := ctx.Param("id")
+	order:= models.Order{}
+	
+	con := globals.ConnectionPool.GetConnection()
+	defer globals.ConnectionPool.ReturnConnection(con)
+	err := con.QueryRow(`select id, dishes, orderer, order_time, delivered from orders where id=$1`,id).Scan(&order.Id,pq.Array(&order.Dishes),&order.Orderer,&order.OrderTime,&order.Delivered)
+	if err != nil{
+		println(err.Error())
+		ctx.JSON(404,gin.H{})
+		return
+	}
+	con.Query(`update orders set delivered=TRUE where id=$1`,id)
+	order.Delivered = true
+
+	ctx.JSON(200,order)
+}
 
 func deleteOrder(ctx *gin.Context){
 	id := ctx.Param("id")
@@ -90,11 +106,7 @@ func deleteOrder(ctx *gin.Context){
 		ctx.JSON(404,gin.H{})
 		return
 	}
-	fmt.Println("lola")
 	con.Query(`delete from orders where id=$1`,id)
 	ctx.JSON(200,gin.H{})
-	
-
 }
-
 
